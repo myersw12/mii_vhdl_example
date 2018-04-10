@@ -1,6 +1,6 @@
 # mii_vhdl_example
 
-VHDL implementation of MII transceiver
+VHDL implementation of MII transceiver.  This is in the form of a Xilinx Vivado Project.
 
 ## Description
 
