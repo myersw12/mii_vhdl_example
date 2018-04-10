@@ -6,7 +6,7 @@ VHDL implementation of MII transceiver.  This is in the form of a Xilinx Vivado 
 
 This is an implementation of a simple MII transceiver.  Currently this only includes the transmitter and receiver.
 To use this, connect the data input and output to FIFOs.  This is a work in progress and I'll probably add FIFO's later.  For those
-unfamiliar with MII, there is a short tutorial on the Wiki.
+unfamiliar with MII, there is a short tutorial on the [Wiki](https://github.com/myersw12/mii_vhdl_example/wiki).
 
 ## Inspiration
 
