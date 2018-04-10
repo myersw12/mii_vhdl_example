@@ -5,7 +5,8 @@ VHDL implementation of MII transceiver
 ## Description
 
 This is an implementation of a simple MII transceiver.  Currently this only includes the transmitter and receiver.
-To use this, connect the data input and output to FIFOs.  This is a work in progress and I'll probably add FIFO's later.
+To use this, connect the data input and output to FIFOs.  This is a work in progress and I'll probably add FIFO's later.  For those
+unfamiliar with MII, there is a short tutorial on the Wiki.
 
 ## Inspiration
 
