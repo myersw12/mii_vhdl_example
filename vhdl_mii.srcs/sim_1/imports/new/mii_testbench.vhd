@@ -61,7 +61,7 @@ architecture Behavioral of mii_testbench is
     signal drop         : std_logic := '0';
     signal collision    : std_logic := '0';
     
-    constant ETHCLK_period : time := 400 ns; -- 400ns == 2.5 MHz clock
+    constant ETHCLK_period : time := 40 ns; -- 400ns == 2.5 MHz clock, 40ns == 25 MHz clock
     
 begin
 
