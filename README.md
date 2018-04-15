@@ -1,6 +1,6 @@
 # mii_vhdl_example
 
-VHDL implementation of MII transceiver.  This is in the form of a Xilinx Vivado Project.
+VHDL implementation of MII transceiver.  This is in the form of a Xilinx Vivado Project.  The target for this porject is the Lattice iCE5LP4K FPGA.  I'm using Vivado for design and testing as I prefer it to the Lattice toolchain.
 
 ## Description
 
