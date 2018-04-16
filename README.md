@@ -20,5 +20,5 @@ simulation are in /extras.  The following are included:
 * send_ethernet.py - Sends the packet used in the simulation over eth0.  This is useful if you want to see the packet in real life.  You'll need a Oscilloscope to see it.
 * ethernet_crc.py - Generates the ethernet frame CRC for the packet in the simulation.  Unless you view this packet on the MII interface using and Oscilloscope, you won't see this CRC.
 
-If you are not familiar with the Vivado project structure, here are links to the [component] (/vhdl_mii.srcs/sources_1/imports/mii_vhdl_example/)
+If you are not familiar with the Vivado project structure, here are links to the [top level component] (/vhdl_mii.srcs/sources_1/imports/mii_vhdl_example/ethernet.vhd)
 and [testbench](/vhdl_mii.srcs/sim_1/imports/new/mii_testbench.vhd) source.
