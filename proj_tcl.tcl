@@ -27,13 +27,6 @@
 #
 # 3. The following remote source files that were added to the original project:-
 #
-#    "/home/user/Documents/FPGA/mii_vhdl_example/vivado_project/vhdl_mii.srcs/sources_1/imports/src/transmitter.vhd"
-#    "/home/user/Documents/FPGA/mii_vhdl_example/vivado_project/vhdl_mii.srcs/sources_1/imports/src/receiver.vhd"
-#    "/home/user/Documents/FPGA/mii_vhdl_example/vivado_project/vhdl_mii.srcs/sources_1/imports/src/ethernet.vhd"
-#    "/home/user/Documents/FPGA/mii_vhdl_example/vivado_project/vhdl_mii.srcs/sources_1/imports/src/lattice_ram.vhd"
-#    "/home/user/Documents/FPGA/mii_vhdl_example/vivado_project/vhdl_mii.srcs/sources_1/imports/src/gray_coder.vhd"
-#    "/home/user/Documents/FPGA/mii_vhdl_example/vivado_project/vhdl_mii.srcs/sources_1/imports/src/fifo_buffer.vhd"
-#    "/home/user/Documents/FPGA/mii_vhdl_example/vivado_project/vhdl_mii.srcs/sim_1/imports/sim/mii_testbench.vhd"
 #
 #*****************************************************************************************
 
@@ -104,7 +97,6 @@ set proj_dir [get_property directory [current_project]]
 set obj [get_projects vhdl_mii]
 set_property "default_lib" "xil_defaultlib" $obj
 set_property "ip_cache_permissions" "read write" $obj
-set_property "ip_output_repo" "/home/user/Documents/FPGA/mii_vhdl_example/vivado_project/vhdl_mii.cache/ip" $obj
 set_property "part" "xc7z020clg484-1" $obj
 set_property "sim.ip.auto_export_scripts" "1" $obj
 set_property "simulator_language" "Mixed" $obj
@@ -119,42 +111,42 @@ if {[string equal [get_filesets -quiet sources_1] ""]} {
 # Set 'sources_1' fileset object
 set obj [get_filesets sources_1]
 set files [list \
- "[file normalize "$origin_dir/vivado_project/vhdl_mii.srcs/sources_1/imports/src/transmitter.vhd"]"\
- "[file normalize "$origin_dir/vivado_project/vhdl_mii.srcs/sources_1/imports/src/receiver.vhd"]"\
- "[file normalize "$origin_dir/vivado_project/vhdl_mii.srcs/sources_1/imports/src/ethernet.vhd"]"\
- "[file normalize "$origin_dir/vivado_project/vhdl_mii.srcs/sources_1/imports/src/lattice_ram.vhd"]"\
- "[file normalize "$origin_dir/vivado_project/vhdl_mii.srcs/sources_1/imports/src/gray_coder.vhd"]"\
- "[file normalize "$origin_dir/vivado_project/vhdl_mii.srcs/sources_1/imports/src/fifo_buffer.vhd"]"\
+ "[file normalize "$origin_dir/src/transmitter.vhd"]"\
+ "[file normalize "$origin_dir/src/receiver.vhd"]"\
+ "[file normalize "$origin_dir/src/ethernet.vhd"]"\
+ "[file normalize "$origin_dir/src/lattice_ram.vhd"]"\
+ "[file normalize "$origin_dir/src/gray_coder.vhd"]"\
+ "[file normalize "$origin_dir/src/fifo_buffer.vhd"]"\
 ]
 add_files -norecurse -fileset $obj $files
 
 # Set 'sources_1' fileset file properties for remote files
-set file "$origin_dir/vivado_project/vhdl_mii.srcs/sources_1/imports/src/transmitter.vhd"
+set file "$origin_dir/src/transmitter.vhd"
 set file [file normalize $file]
 set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
 set_property "file_type" "VHDL" $file_obj
 
-set file "$origin_dir/vivado_project/vhdl_mii.srcs/sources_1/imports/src/receiver.vhd"
+set file "$origin_dir/src/receiver.vhd"
 set file [file normalize $file]
 set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
 set_property "file_type" "VHDL" $file_obj
 
-set file "$origin_dir/vivado_project/vhdl_mii.srcs/sources_1/imports/src/ethernet.vhd"
+set file "$origin_dir/src/ethernet.vhd"
 set file [file normalize $file]
 set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
 set_property "file_type" "VHDL" $file_obj
 
-set file "$origin_dir/vivado_project/vhdl_mii.srcs/sources_1/imports/src/lattice_ram.vhd"
+set file "$origin_dir/src/lattice_ram.vhd"
 set file [file normalize $file]
 set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
 set_property "file_type" "VHDL" $file_obj
 
-set file "$origin_dir/vivado_project/vhdl_mii.srcs/sources_1/imports/src/gray_coder.vhd"
+set file "$origin_dir/src/gray_coder.vhd"
 set file [file normalize $file]
 set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
 set_property "file_type" "VHDL" $file_obj
 
-set file "$origin_dir/vivado_project/vhdl_mii.srcs/sources_1/imports/src/fifo_buffer.vhd"
+set file "$origin_dir/src/fifo_buffer.vhd"
 set file [file normalize $file]
 set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
 set_property "file_type" "VHDL" $file_obj
@@ -188,12 +180,12 @@ if {[string equal [get_filesets -quiet sim_1] ""]} {
 # Set 'sim_1' fileset object
 set obj [get_filesets sim_1]
 set files [list \
- "[file normalize "$origin_dir/vivado_project/vhdl_mii.srcs/sim_1/imports/sim/mii_testbench.vhd"]"\
+ "[file normalize "$origin_dir/src/sim/mii_testbench.vhd"]"\
 ]
 add_files -norecurse -fileset $obj $files
 
 # Set 'sim_1' fileset file properties for remote files
-set file "$origin_dir/vivado_project/vhdl_mii.srcs/sim_1/imports/sim/mii_testbench.vhd"
+set file "$origin_dir/src/sim/mii_testbench.vhd"
 set file [file normalize $file]
 set file_obj [get_files -of_objects [get_filesets sim_1] [list "*$file"]]
 set_property "file_type" "VHDL" $file_obj
