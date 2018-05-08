@@ -1,8 +1,0 @@
-# compile vhdl design source files
-vhdl xil_defaultlib  "../../../vhdl_mii.srcs/sources_1/imports/mii_vhdl_example/transmitter.vhd"
-vhdl xil_defaultlib  "../../../vhdl_mii.srcs/sources_1/imports/mii_vhdl_example/receiver.vhd"
-vhdl xil_defaultlib  "../../../vhdl_mii.srcs/sources_1/imports/mii_vhdl_example/ethernet.vhd"
-vhdl xil_defaultlib  "../../../vhdl_mii.srcs/sim_1/imports/new/mii_testbench.vhd"
-
-# Do not sort compile order
-nosort

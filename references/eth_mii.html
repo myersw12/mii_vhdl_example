@@ -1,0 +1,359 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.75 [en] (X11; U; Linux 2.2.16-22 i586) [Netscape]">
+</head>
+<body>
+10/100 Mb/s Ethernet
+<br>By: Colin Durocher, Jeffrey Spiers
+<br>
+<hr WIDTH="100%">
+<p><b><u>Introduction</u></b>
+<p>This document briefly introduces the IEEE 802.3u MII standard and provides
+fully functional VHDL source code for interfacing with an MII-based transceiver.
+While the provided code could potentially be used in a 100 Mb/s implementation,
+a few minor changes would have to be made.&nbsp; This design has only been
+simulated and physically tested at 10 Mbit/s.
+<p>Medium-Independent Interface (MII) is the IEEE standard interface between
+the MAC (controller) and PHY (transceiver) layers of a 100 Mbit/s Ethernet
+implementation, defined in the IEEE 802.3u standard.&nbsp; It is a 4-bit
+wide parallel interface.
+<br>&nbsp;
+<p><b><u>Signals</u></b>
+<p>The MII standard defines the following signals:
+<br>&nbsp;
+<table BORDER WIDTH="100%" NOSAVE >
+<tr NOSAVE>
+<td NOSAVE><b>Signal</b></td>
+
+<td><b>Input/Output</b>
+<br><b>(from MAC's perspective)</b></td>
+
+<td><b>Purpose</b></td>
+</tr>
+
+<tr>
+<td>MDIO</td>
+
+<td>I/O</td>
+
+<td>Serial control line used to set/read internal register values in the
+MII compliant transceiver.</td>
+</tr>
+
+<tr>
+<td>MDC</td>
+
+<td>O</td>
+
+<td>Control line clock. All transitions on MDIO are synchronous to this
+clock signal. This clock must run no faster than 2.5 MHz.</td>
+</tr>
+
+<tr>
+<td>RXD[3 downto 0]</td>
+
+<td>I</td>
+
+<td>nibble-wide data read by the MAC layer on the rising edge of RXCLK.</td>
+</tr>
+
+<tr>
+<td>RXDV</td>
+
+<td>I</td>
+
+<td>Indicates when data on RXD is valid.</td>
+</tr>
+
+<tr>
+<td>RXCLK</td>
+
+<td>I</td>
+
+<td>Clock signal, either 2.5 or 25 MHz (10/100 Mbit, respectively) provided
+by PHY.&nbsp; All RXD transitions&nbsp; are synchronous to this clock.</td>
+</tr>
+
+<tr>
+<td>RXER</td>
+
+<td>I</td>
+
+<td>Defined for 100 Mbit/s transmission only.&nbsp; Indicates certain types
+of errors in receive stream.</td>
+</tr>
+
+<tr>
+<td>TXER</td>
+
+<td>O</td>
+
+<td>Defined for 100 Mbit/s transmission only.&nbsp; Forces generation of
+error in transmit stream. See IEEE 802.3u for a more complete description.</td>
+</tr>
+
+<tr>
+<td>TXCLK</td>
+
+<td>I</td>
+
+<td>Clock signal, either 2.5 or 25 MHz (10/100 Mbit, respectively) provided
+by PHY.&nbsp; All TXD transitions are synchronous to this clock.</td>
+</tr>
+
+<tr>
+<td>TXEN</td>
+
+<td>O</td>
+
+<td>Enables transmission of the nibble appearing on TXD[3 downto 0].</td>
+</tr>
+
+<tr>
+<td>TXD[3 downto 0]</td>
+
+<td>O</td>
+
+<td>nibble-wide data read by PHY on rising edge of TXD.</td>
+</tr>
+
+<tr>
+<td>COL</td>
+
+<td>I</td>
+
+<td>Defined in half-duplex mode only.&nbsp; Indicates a collision was detected
+by PHY.</td>
+</tr>
+
+<tr>
+<td>CRS</td>
+
+<td>I</td>
+
+<td>Carrier Sense. Indicates that the physical Ethernet medium is busy.</td>
+</tr>
+</table>
+
+<p>Note that no guarantees are made about the phase relationship between
+TXCLK and RXCLK.
+<p>All the above signals, save MDIO, MDC, RXER, and TXER are defined as
+inputs or output to the Ethernet module provided below.&nbsp; RXER and
+TXER are not needed for a 10 Mbit/s implementation.&nbsp; MDIO and MDC
+are not needed in a minimal implementation (such as the one provided in
+the Ethernet module below) because the transceiver registers have convenient
+default values.&nbsp; The Ethernet module instantiates various components
+defined in eth_pkg.vhd.
+<br>&nbsp;
+<p><b><u>Receiving Data</u></b>
+<p>The 802.3u standard indicates that the data received on the RXD[3 downto
+0] data lines is properly bit-aligned, meaning that each 4-bit nibble is
+either the lower 4 bits or upper 4 bits of a transmitted byte of data.
+The lower 4 bits are received first, then the upper 4 bits. For example,
+if the following nibbles (in hexadecimal) were received: "8", "9", "A",
+"B", the bytes transmitted were "0x98" and "0xBA".
+<p>The format of Ethernet frames is described in an <a href="http://www.ee.ualberta.ca/~elliott/ee552/studentAppNotes/1998f/ethernet/ethernet.html#format">earlier
+student application note</a>. Essentially, the frame begins with 15 consecutive
+"0101" preamble nibbles, followed by a "1101", then the data. The MII standard
+does not specify how many of the 15 preamble nibbles will appear at RXD[3
+downto 0]. In order to receive data, the MAC must wait for RXDV to be high
+and RXD[3 downto 0] to be "1101". The nibble after "1101" is the first
+valid data nibble. Specifically, it is the low 4 bits of the first byte
+of the destination MAC address of the Ethernet frame. Refer to the previously
+mentioned student application note for more information on the Ethernet
+frame format.
+<br>&nbsp;
+<p><b><u>Transmitting Data</u></b>
+<p>Data appearing on the TXD[3 downto 0] lines is transmitted when TXEN
+is high. The least significant 4 bits should be sent before the most significant
+4 bits for each byte. To transmit 0xB8, for example, the nibble "8" should
+be sent, then "B".
+<p>Before any data can be sent, the MAC is responsible for first transmitting
+a valid preamble and start-of-frame delimiter (15 x "0101" + "1101"). In
+order for the Ethernet frame to be valid, TXEN must remain high for the
+entire duration of the frame, which means the data appearing at TXD[3 downto
+0] must be ready on every TXCLK cycle (400ns clock period).
+<br>&nbsp;
+<p><b><u>Ethernet Module</u></b>
+<p>The Ethernet module that we wrote provides an even simpler interface
+to an MII transceiver. The intention of our module is to provide transceiver
+input/output synchronisation, byte-wide communication, and preamble generation.
+<p><i>Signals</i>
+<p>The Ethernet module has two sets of signals, the MII signals and the
+internal interface signals. The MII signals used are a subset of those
+described in the standard, because for most Ethernet implementations, some
+of the signals are unnecessary. The MII signals we use and the corresponding
+VHDL signal name are given below:
+<br>&nbsp;
+<table BORDER WIDTH="600" NOSAVE >
+<tr NOSAVE>
+<td WIDTH="100" NOSAVE><b>MII Signal</b></td>
+
+<td WIDTH="100%" NOSAVE><b>VHDL Signal</b></td>
+</tr>
+
+<tr NOSAVE>
+<td WIDTH="100" NOSAVE>RXCLK&nbsp;</td>
+
+<td NOSAVE>rxclk</td>
+</tr>
+
+<tr NOSAVE>
+<td>RXDV</td>
+
+<td NOSAVE>rxdv_4</td>
+</tr>
+
+<tr>
+<td>RXD[3 downto 0]</td>
+
+<td>rxdata_4(3 downto 0)</td>
+</tr>
+
+<tr NOSAVE>
+<td>TXCLK</td>
+
+<td WIDTH="1" NOSAVE>txclk</td>
+</tr>
+
+<tr>
+<td>TXEN</td>
+
+<td>txen_4</td>
+</tr>
+
+<tr>
+<td>TXD[3 downto 0]</td>
+
+<td>txdata_4(3 downto 0)</td>
+</tr>
+
+<tr>
+<td>COL</td>
+
+<td>col</td>
+</tr>
+</table>
+
+<p>The signals provided to the designer are the following:
+<br>&nbsp;
+<table BORDER WIDTH="600" NOSAVE >
+<tr>
+<td><b>VHDL Signal</b></td>
+
+<td><b>Description</b></td>
+</tr>
+
+<tr NOSAVE>
+<td NOSAVE>clk</td>
+
+<td>System clock. Must be 2.5 Mhz for proper 10Mbit operation, or 25MHz
+for 100 Mbit operation.</td>
+</tr>
+
+<tr>
+<td>reset</td>
+
+<td>Active high asynchronous reset</td>
+</tr>
+
+<tr>
+<td>sync_clk</td>
+
+<td>Synchronising clock, used to synchronise <i>rxclk</i> and <i>txclk</i>
+to the system clock, <i>clk</i>. Should be 10x the frequency of the system
+clock</td>
+</tr>
+
+<tr>
+<td>rxdv</td>
+
+<td>Indicates a byte of data is ready to be read</td>
+</tr>
+
+<tr>
+<td>rxdata(7 downto 0)</td>
+
+<td>Byte of received data</td>
+</tr>
+
+<tr>
+<td>txen</td>
+
+<td>When this signal first goes from low to high, a preamble is generated
+and transmitted. 8 byte times later, bytes are read from txdata(7 downto
+0) and transmitted. Transmission ceases when txen goes low.</td>
+</tr>
+
+<tr>
+<td>txdata(7 downto 0)</td>
+
+<td>Byte of data to be transmitted</td>
+</tr>
+
+<tr>
+<td>drop</td>
+
+<td>Indicates the current frame should be dropped.</td>
+</tr>
+</table>
+
+<p>These signals are all clocked on the <i>clk</i> signal, with the exception
+of the asynchronous reset and the synchronisation clock.
+<p>An important limitation of the ethernet module is that bytes must be
+sent only every second clock cycle. This is simply because Ethernet transmission
+is only 4 bits/clk, so bytes can be transmitted only every 2 clock cycles.
+<br>&nbsp;
+<p><b><u>Code</u></b>
+<br>&nbsp;
+<table BORDER WIDTH="600" NOSAVE >
+<tr>
+<td>File</td>
+
+<td>Description</td>
+</tr>
+
+<tr>
+<td><a href="eth_pkg.vhd">eth_pkg.vhd</a></td>
+
+<td>The VHDL package that contains all components of the Ethernet module</td>
+</tr>
+
+<tr>
+<td><a href="ethernet.vhd">ethernet.vhd</a></td>
+
+<td>Top-level ethernet entity</td>
+</tr>
+
+<tr>
+<td><a href="receiver.vhd">receiver.vhd</a></td>
+
+<td>Handles reception of Ethernet frames, takes 4-bit nibbles and constructs
+8-bit bytes</td>
+</tr>
+
+<tr>
+<td><a href="transmitter.vhd">transmitter.vhd</a></td>
+
+<td>Handles transmission of Ethernet frames, including generation of preamble/start-of-frame-delimiter.
+Accepts bytes and transmits nibbles.</td>
+</tr>
+
+<tr>
+<td><a href="sync.vhd">sync.vhd</a></td>
+
+<td>Synchronises all MII signals to the system clk</td>
+</tr>
+
+<tr>
+<td><a href="sub_sync.vhd">sub_sync.vhd</a></td>
+
+<td>Used by sync to synchronise a set of signals between 2 distinct clocks
+of the same frequency/period</td>
+</tr>
+</table>
+
+</body>
+</html>
