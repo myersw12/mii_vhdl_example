@@ -8,6 +8,15 @@ This is an implementation of a simple MII transceiver.  Currently this only incl
 To use this, connect the data input and output to FIFOs.  This is a work in progress and I'll probably add FIFO's later.  For those
 unfamiliar with MII, there is a short tutorial on the [Wiki](https://github.com/myersw12/mii_vhdl_example/wiki).
 
+## Getting Started
+
+The project is configured to take advantage of Vivado TCL scripting.  Instead of committing the Vivido project, a TCL script is committed that sets up the Vivado project locally.  All HDL source and testbench code goes in the /src directory.  To get started do the following:
+
+* start the Vivado IDE: ie. `./vivado` and enter the TCL console
+* run `source proj_tcl.tcl` from the TCL console
+
+At this point a new directory called vhdl_mii will exist.  This is where the Vivido project resides.  Please do not commit any of the files from this directory.
+
 ## Inspiration
 
 I'm currently looking at MII to SPI conversion and decided to look into doing the conversion on an FPGA.  There are not many commercially available ICs that do this.
@@ -20,5 +29,4 @@ simulation are in /extras.  The following are included:
 * send_ethernet.py - Sends the packet used in the simulation over eth0.  This is useful if you want to see the packet in real life.  You'll need a Oscilloscope to see it.
 * ethernet_crc.py - Generates the ethernet frame CRC for the packet in the simulation.  Unless you view this packet on the MII interface using and Oscilloscope, you won't see this CRC.
 
-If you are not familiar with the Vivado project structure, here are links to the [top level component](/vhdl_mii.srcs/sources_1/imports/mii_vhdl_example/ethernet.vhd)
-and [testbench](/vhdl_mii.srcs/sim_1/imports/new/mii_testbench.vhd) source.
+
