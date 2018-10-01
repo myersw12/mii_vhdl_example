@@ -11,7 +11,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 library work;
 
-entity ethernet is
+entity ethernet_transceiver is
 
 	port(
 		-----------------------------
@@ -46,13 +46,17 @@ entity ethernet is
 		txen:		in std_logic;											-- tx enable
 
 		-- status outputs
-		drop:			buffer std_logic	-- indicates the current frame should be dropped
+		drop:			buffer std_logic;	-- indicates the current frame should be dropped
+		
+		rx_pkt_len_out:    out std_logic_vector(10 downto 0);
+		rx_pkt_done:   out std_logic
+		
 		
 	);
 
-end entity ethernet;
+end entity ethernet_transceiver;
 
-architecture eth_arch of ethernet is
+architecture eth_arch of ethernet_transceiver is
 
     -- The drop and reset signals both serve as a reset...
     -- OR them together into the clear signal
@@ -70,7 +74,9 @@ architecture eth_arch of ethernet is
             
             -- to output
             rxdata_8:								out std_logic_vector(7 downto 0);
-            rxdv_8:									out std_logic
+            rxdv_8:									out std_logic;
+            packet_len_out:                         out std_logic_vector(10 downto 0);
+            packet_done:                            out std_logic
         );
     end component receiver;
     
@@ -127,7 +133,9 @@ begin
     
             -- 8 bytes out
             rxdv_8 => rxdv,
-            rxdata_8 => rxdata
+            rxdata_8 => rxdata,
+            packet_len_out => rx_pkt_len_out,
+            packet_done => rx_pkt_done
         );
 
 end architecture eth_arch;

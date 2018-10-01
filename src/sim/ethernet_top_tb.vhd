@@ -1,23 +1,52 @@
--- Testbench
--- ---------
--- Simulates receiving and transmitting the same packet
--- See the /extras directory for examples of the packet
---
--------------------------------------------------------------------------------
+----------------------------------------------------------------------------------
+-- Company: 
+-- Engineer: 
+-- 
+-- Create Date: 09/30/2018 09:29:22 PM
+-- Design Name: 
+-- Module Name: ethernet_top_tb - Behavioral
+-- Project Name: 
+-- Target Devices: 
+-- Tool Versions: 
+-- Description: 
+-- 
+-- Dependencies: 
+-- 
+-- Revision:
+-- Revision 0.01 - File Created
+-- Additional Comments:
+-- 
+----------------------------------------------------------------------------------
+
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
-entity mii_testbench is
-end mii_testbench;
+-- Uncomment the following library declaration if using
+-- arithmetic functions with Signed or Unsigned values
+--use IEEE.NUMERIC_STD.ALL;
 
-architecture Behavioral of mii_testbench is
+-- Uncomment the following library declaration if instantiating
+-- any Xilinx leaf cells in this code.
+--library UNISIM;
+--use UNISIM.VComponents.all;
+
+entity ethernet_top_tb is
+--  Port ( );
+end ethernet_top_tb;
+
+architecture Behavioral of ethernet_top_tb is
 
     component ethernet_top is
+        generic (
+            ram_data_width : natural := 8;
+            ram_addr_width : natural := 11 -- 2^11
+        );
         Port ( 
-               -- Fifo in/out 
-               in_data      : in std_logic_vector (7 downto 0); -- data to transmit over MII
-               out_data      : out std_logic_vector (7 downto 0); -- data received from MII
+               -- in/out 
+               in_data      : in std_logic_vector (7 downto 0); -- data from the controller
+               out_data      : out std_logic_vector (7 downto 0); -- data to the controller
+               
                -- MII rx inputs
                rxdata_4     : in std_logic_vector(3 downto 0);
                rxdv_4       : in std_logic;            -- receive data valid
@@ -36,11 +65,11 @@ architecture Behavioral of mii_testbench is
                rx_full      : out std_logic;
                tx_full      : out std_logic;
                
-               read_enable  : out std_logic;
-               write_enable : in std_logic
+               read_enable  : in std_logic;
+               write_enable : in std_logic  
              );
-    end component ethernet_top;
-    
+    end component;
+
     signal clk          : std_logic := '0';
     signal rxclk        : std_logic := '0';
     signal txclk        : std_logic := '0';
@@ -64,7 +93,7 @@ architecture Behavioral of mii_testbench is
     
     constant clk_period    : time := 125 ns; -- 125ns == 8 MHz clock, 250ns == 4 MHz clock
     constant ETHCLK_period : time := 40 ns; -- 400ns == 2.5 MHz clock, 40ns == 25 MHz clock
-    
+
 begin
 
     uut: ethernet_top
@@ -88,13 +117,13 @@ begin
         );
         
     externalclk : process
-    begin
-        clk <= '1';
-        wait for clk_period/2;
-        clk <= '0';
-        wait for clk_period/2;
-    end process;
-    
+        begin
+            clk <= '1';
+            wait for clk_period/2;
+            clk <= '0';
+            wait for clk_period/2;
+        end process;
+        
     -- tx and rx clocks are synced when they come from the master device
     ETHCLK_process : process
     begin
@@ -112,8 +141,9 @@ begin
         wait for clk_period * 10;
         reset <= '0';
         wait;
-    end process;
-    
+        end process;
+        
+        
     -- simulate transmission from master device to vhdl
     RXDATA_process : process is
         procedure mii_rx_cycle(data : in std_logic_vector(3 downto 0) := "XXXX";
@@ -190,98 +220,92 @@ begin
         mii_rx_stimulate("11100011", '1');
 
         -- all lines go to zero
-        mii_rx_stimulate("00000000", '0');
-        
-        wait for ETHCLK_period*4;
-        
-        in_data <= "01100000";
-        wait for CLK_period * 1;
-        in_data <= "00000000";
-        wait for CLK_period * 1;
-        in_data <= "00000100";
-        wait for CLK_period * 1;
-        in_data <= "00000000";
-        wait for CLK_period * 1;        
+        mii_rx_stimulate("00000000", '0');    
 
         -- wait for a while and then repeat        
         wait for ETHCLK_period*50;
     
     end process;
     
---    -- simulate feeding vhdl transmitter with input
---    TXDATA_process : process is
---            procedure tx_stimulate(
---                        data : in std_logic_vector(7 downto 0) := "XXXXXXXX";
---                        en   : in std_logic                    := 'X') is
---            begin
---                    tx_en  <= en;
---                    tx_data    <= data;
---                    -- in real use, this would be handled by whatever is passing
---                    -- data to the transmitter.  Most likely reading from a fifo.
---                    wait for clk_period * 2;
---            end procedure;        
-           
---        begin
---            -- set input to all 0
---            tx_stimulate("00000000", '0');
-            
---            wait for clk_period*12;
-           
---            -- preamble
---            for i in 0 to 6 loop
---                tx_stimulate("01010101", '1');
---            end loop; 
-            
---            tx_stimulate("11010101", '1');
- 
---            -- MAC Address FF:FF:FF:FF:FF:FF
---            for i in 0 to 5 loop
---                tx_stimulate("11111111", '1');
---            end loop;
-            
---            -- MAC Address DE:AD:BE:EF:BA:5E
---            tx_stimulate("11011110", '1');
---            tx_stimulate("10101101", '1');
---            tx_stimulate("10111110", '1');
---            tx_stimulate("11101111", '1');
---            tx_stimulate("10111010", '1');
---            tx_stimulate("01011110", '1');
-            
---            -- Type BE:EF
---            tx_stimulate("10111110", '1');
---            tx_stimulate("11101111", '1');
-            
---            -- Data 68:65:6c:6c:6f:20:77:6f:72:6c:64
---            tx_stimulate("01101000", '1');
---            tx_stimulate("01100101", '1');
---            tx_stimulate("01101100", '1');
---            tx_stimulate("01101100", '1');
---            tx_stimulate("01101111", '1');
---            tx_stimulate("00100000", '1');
---            tx_stimulate("01110111", '1');
---            tx_stimulate("01101111", '1');
---            tx_stimulate("01110010", '1');
---            tx_stimulate("01101100", '1');
---            tx_stimulate("01100100", '1');
-            
---            -- Padding 00
---            for i in 0 to 35 loop
---                tx_stimulate("00000000", '1');
---            end loop;
-            
---            -- FCS F0:F4:46:3E
---            tx_stimulate("11110000", '1');
---            tx_stimulate("11110100", '1');
---            tx_stimulate("01000110", '1');
---            tx_stimulate("00111110", '1');
     
---            -- all lines go to zero
---            tx_stimulate("00000000", '0');
-            
---            -- wait for a while and then repeat
---            wait for ETHCLK_period*50;
+    -- simulate feeding vhdl transmitter with input
+    TXDATA_process : process is
+            procedure tx_stimulate(
+                        data : in std_logic_vector(7 downto 0) := "XXXXXXXX";
+                        en   : in std_logic                    := 'X') is
+            begin
+                    tx_en  <= en;
+                    in_data    <= data;
+                    
+          
+                    -- in real use, this would be handled by whatever is passing
+                    -- data to the transmitter.  Most likely reading from a fifo.
+                    wait for clk_period * 2;
+            end procedure;        
+           
+        begin
         
---        end process;
+            -- all lines go to zero
+            tx_stimulate("00000000", '0');
+            
+            wait for ETHCLK_period*10;
+           
+            -- preamble
+            for i in 0 to 6 loop
+                tx_stimulate("01010101", '1');
+            end loop; 
+            
+            tx_stimulate("11010101", '1');
+ 
+            -- MAC Address FF:FF:FF:FF:FF:FF
+            for i in 0 to 5 loop
+                tx_stimulate("11111111", '1');
+            end loop;
+            
+            -- MAC Address DE:AD:BE:EF:BA:5E
+            tx_stimulate("11011110", '1');
+            tx_stimulate("10101101", '1');
+            tx_stimulate("10111110", '1');
+            tx_stimulate("11101111", '1');
+            tx_stimulate("10111010", '1');
+            tx_stimulate("01011110", '1');
+            
+            -- Type BE:EF
+            tx_stimulate("10111110", '1');
+            tx_stimulate("11101111", '1');
+            
+            -- Data 68:65:6c:6c:6f:20:77:6f:72:6c:64
+            tx_stimulate("01101000", '1');
+            tx_stimulate("01100101", '1');
+            tx_stimulate("01101100", '1');
+            tx_stimulate("01101100", '1');
+            tx_stimulate("01101111", '1');
+            tx_stimulate("00100000", '1');
+            tx_stimulate("01110111", '1');
+            tx_stimulate("01101111", '1');
+            tx_stimulate("01110010", '1');
+            tx_stimulate("01101100", '1');
+            tx_stimulate("01100100", '1');
+            
+            -- Padding 00
+            for i in 0 to 35 loop
+                tx_stimulate("00000000", '1');
+            end loop;
+            
+            -- FCS F0:F4:46:3E
+            tx_stimulate("11110000", '1');
+            tx_stimulate("11110100", '1');
+            tx_stimulate("01000110", '1');
+            tx_stimulate("00111110", '1');
     
+            -- all lines go to zero
+            tx_stimulate("00000000", '0');
+            
+            tx_en <= '0';
+            
+            -- wait for a while and then repeat
+            wait for ETHCLK_period*256;
+        
+        end process;
 
 end Behavioral;

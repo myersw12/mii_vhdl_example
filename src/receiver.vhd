@@ -6,6 +6,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
+use IEEE.NUMERIC_STD.ALL;
 
 entity receiver is
 	port (
@@ -19,7 +20,9 @@ entity receiver is
 		
 		-- to output
 		rxdata_8:								out std_logic_vector(7 downto 0);
-		rxdv_8:									out std_logic
+		rxdv_8:									out std_logic;
+		packet_len_out:                         out std_logic_vector(10 downto 0);
+		packet_done:                            out std_logic
 	);
 end entity receiver;
 
@@ -29,7 +32,8 @@ architecture receive of receiver is
 	signal state : stateType;
 	signal rxlow, rxhigh:		std_logic_vector(3 downto 0);
 	signal count :              std_logic := '0';
-	signal burst_started :      std_logic := '0'; 
+	signal burst_started :      std_logic := '0';
+	signal packet_len :         std_logic_vector(10 downto 0) := (others => '0');
 begin
 
 -- Looking at an ethernet frame on paper, the bytes are sent
@@ -38,6 +42,8 @@ begin
 -- MSNibble.  So, put the first nibble in the lower 4 bits
 -- of the byte, and the next in the higher bits.
 
+packet_len_out <= packet_len;
+
 pack : process(clk)
 begin
 	if rising_edge(clk) then
@@ -45,6 +51,9 @@ begin
 			state <= idle;
 			count <= '0'; -- even and odd, used for rxdv_8 signal
 		    burst_started <= '0';
+		    rxdata_8 <= (others => '0');
+		    packet_done <= '0';
+            packet_len <= (others => '0');
 		else
 			case state is
 				when idle =>
@@ -56,6 +65,9 @@ begin
 					else
 					    burst_started <= '0';
 					end if;
+				    
+				    packet_done <= '0';
+				    packet_len <= (others => '0');
 
 				when low =>
 					if rxdv_4 = '1' then
@@ -63,6 +75,7 @@ begin
 						count <= not count;
 					else
 						state <= idle;	-- end of frame
+						packet_done <= '1';
 					end if;
 
 				when high =>
@@ -78,6 +91,7 @@ begin
 			if count = '1' then
 			    -- combine rxhigh and rxlow to make 1 byte of data
                 rxdata_8 <= rxhigh & rxlow;
+                packet_len <= std_logic_vector(unsigned(packet_len) + 1);
                 burst_started <= '1';
                 count <= '0';
             end if;
@@ -88,26 +102,30 @@ end process pack;
 
 data_out : process(clk)
 begin
-
     if rising_edge(clk) then
-        -- produce a rising edge on rxdv_8 every time data is ready to be read
-        if count = '1' and (burst_started = '1') then
-            rxdv_8 <= '1';
-        else
-            rxdv_8 <= '0';
-        end if;
-        -- load data from MII into rxlow and rxhigh
-        if (state = low) then
-            rxlow <= rxdata_4;
-        else
-            rxlow <= rxlow;
-        end if;
-        if (state = high) then
-            rxhigh <= rxdata_4;
-        else
-            rxhigh <= rxhigh;
-        end if;
     
+        if clr = '1' then
+            rxhigh <= (others => '0');
+            rxlow <= (others => '0');
+        else
+            -- produce a rising edge on rxdv_8 every time data is ready to be read
+            if count = '1' and (burst_started = '1') then
+                rxdv_8 <= '1';
+            else
+                rxdv_8 <= '0';
+            end if;
+            -- load data from MII into rxlow and rxhigh
+            if (state = low) then
+                rxlow <= rxdata_4;
+            else
+                rxlow <= rxlow;
+            end if;
+            if (state = high) then
+                rxhigh <= rxdata_4;
+            else
+                rxhigh <= rxhigh;
+            end if;
+        end if;
     end if;
 
 end process data_out;

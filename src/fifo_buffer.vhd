@@ -39,7 +39,7 @@ entity fifo_buffer is
     
 end fifo_buffer;
 
-architecture Behavioral of fifo_buffer is
+architecture rtl of fifo_buffer is
         
     component ram is
     port(
@@ -164,4 +164,4 @@ begin
     Empty_out <= empty;
     
    
-end Behavioral;
+end rtl;
