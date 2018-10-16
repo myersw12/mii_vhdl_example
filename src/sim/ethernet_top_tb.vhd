@@ -81,7 +81,7 @@ architecture Behavioral of ethernet_top_tb is
     signal mii_txen     : std_logic := '0';
     
     signal out_data     : std_logic_vector (7 downto 0) := (others => '0');
-    signal rx_dv        : std_logic := '0';
+    signal rx_en        : std_logic := '0';
     signal in_data      : std_logic_vector (7 downto 0) := (others => '0');
     signal tx_en        : std_logic := '0';
     
@@ -112,17 +112,17 @@ begin
             mii_rx_clk => rxclk,
             rx_full => rx_fifo_full,
             tx_full => tx_fifo_full,
-            read_enable => rx_dv,
+            read_enable => rx_en,
             write_enable => tx_en 
         );
         
     externalclk : process
-        begin
-            clk <= '1';
-            wait for clk_period/2;
-            clk <= '0';
-            wait for clk_period/2;
-        end process;
+    begin
+        clk <= '1';
+        wait for clk_period/2;
+        clk <= '0';
+        wait for clk_period/2;
+    end process;
         
     -- tx and rx clocks are synced when they come from the master device
     ETHCLK_process : process
@@ -141,8 +141,15 @@ begin
         wait for clk_period * 10;
         reset <= '0';
         wait;
-        end process;
+    end process;
         
+        
+    read_process : process(clk)
+    begin
+        if rising_edge(clk) then
+            -- add logic here to read when packets are done
+        end if;
+    end process;
         
     -- simulate transmission from master device to vhdl
     RXDATA_process : process is

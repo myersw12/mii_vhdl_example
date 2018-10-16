@@ -133,8 +133,8 @@ architecture rtl of ethernet_top is
     signal write_tx_fifo        : std_logic := '0';
     signal tx_empty             : std_logic := '0';
     signal rx_empty             : std_logic := '0';
-    signal read_tx_data         : std_logic := '0';
-    signal txclk_count          : std_logic := '0';
+
+    signal nibble_count         : std_logic := '0';
 
 begin
 
@@ -164,7 +164,7 @@ begin
             wclk        => clk,
             rclk        => mii_tx_clk,
             reset       => rst,
-            read        => read_tx_data,
+            read        => mii_tx_en,
             write       => write_enable, 
             write_data  => in_data,
             empty_out   => tx_empty,
@@ -185,15 +185,31 @@ begin
             read_data   => out_data
         );
 
-    start_tx : process(rst,write_enable)
+    start_tx : process(mii_tx_clk, rst, write_enable)
     
     begin
         if rst = '1' then
             mii_tx_en <= '0';
+            nibble_count <= '0';
+            
         elsif falling_edge(write_enable) then
             mii_tx_en <= '1';
-        elsif tx_empty = '1' then
-            mii_tx_en <= '0';
+        
+        -- tx_empty changes to 1 when the last byte is read from 
+        -- the FIFO buffer.  This means we still have 2 more
+        -- nibbles to send on the mii_tx line.  The mii_tx_en 
+        -- line needs to stay high until these are sent.
+        elsif rising_edge(mii_tx_clk) then
+            if tx_empty = '1' then
+                if nibble_count = '1' then
+                    mii_tx_en <= '0';
+                    nibble_count <= '0';
+                else
+                    nibble_count <= '1';
+                end if;
+            else
+                nibble_count <= '0';
+            end if;
         end if;
     end process;
 
@@ -204,13 +220,9 @@ begin
             if rst = '1' then
                 write_tx_fifo <= '0';
                 fifo_tx_data <= (others => '0');
-                txclk_count <= '0';
             else
                if mii_tx_en = '1' then
-                    read_tx_data <= '1';
                     fifo_tx_data <= mii_tx_data;
-                    txclk_count <= '1';
-                   
                end if;
             
             end if;
